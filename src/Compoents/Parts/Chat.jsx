@@ -1,7 +1,7 @@
 function Chat(props) {
     return ( 
         <>
-            <h2 className="text-2xl font-bold">Chat #{props.id}</h2>
+            <h2 className="text-2xl font-bold text-[#eee8f6]">Chat #{props.id}</h2>
         </>
      );
 }

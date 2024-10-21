@@ -2,11 +2,14 @@ import Chat from "../Parts/Chat";
 
 function ChatsList() {
     return ( 
-        <>
-            <Chat id={1}/>
-            <Chat id={2}/>
-            <Chat id={3 }/>
-        </>
+       
+            <section className="bg-[#3d52a1] w-[30%] h-[80%] ">
+                <Chat id={1}/>
+                <Chat id={2}/>
+                <Chat id={3 }/>
+            </section>
+          
+      
      );
 }
 
