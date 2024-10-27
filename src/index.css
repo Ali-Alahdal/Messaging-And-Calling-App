@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root{
+    --bg : white;
+    --bgS : #75b2ad;
+    --btn : #27363b;
+    --btn-l : #2f4850;
+}

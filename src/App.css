@@ -1,6 +1,7 @@
-
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
 body{
-    background:  #eee8f6;
+    font-family: "Ubuntu", sans-serif;
+    background:  var(--bg);
     height: 100vh;
 }
 
