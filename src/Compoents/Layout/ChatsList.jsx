@@ -1,13 +1,40 @@
 import { useEffect, useState } from "react";
 import Chat from "../Parts/Chat";
 import '../../App.css'
+import axios from "axios";
 function ChatsList(props) {
     
     const [chats,setChats] = useState([]);
-    const fetchChats = async () =>{
+    const re = async () => {
         try {
-            const response = await fetch(`https://127.0.0.1:8000/messaging/getChats/${localStorage.getItem("user_id")}/`);
+            const response = await axios.post(`http://127.0.0.1:8000/api/users/refresh/`,{
+                withCredentials : true
+            });
 
+            if(!response.ok){
+                console.log(response);
+                
+                throw new Error(response)
+            }else{
+                const json =  await response.json();
+                setChats(json);
+            }
+            
+            
+        } catch (error) {
+            console.log(error);
+            
+        }
+    }
+    const fetchChats = async () =>{
+
+        try {
+            const response = await axios.get(`http://127.0.0.1:8000/api/messaging/getChats/`,{
+                withCredentials : true
+            });
+
+            console.log(response);
+            
             if(!response.ok){
                 throw new Error("Error Happend")
             }else{
@@ -35,7 +62,7 @@ function ChatsList(props) {
                     })
                 : null}
                
-                
+                <button onClick={re}>dhgqwhbjdwbajn</button>
             </section>
           
       

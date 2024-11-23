@@ -21,6 +21,7 @@ function Main() {
         
     },[currentChat])
     return ( <>
+        
         <Logo />
         <ChatsList setCurrentChat={setCurrentChat} />
         <CurrentChat receiver={currentChat} />

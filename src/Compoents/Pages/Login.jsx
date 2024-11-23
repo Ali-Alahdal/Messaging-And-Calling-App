@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { json, Link, useLocation, useNavigate } from "react-router-dom";
 import Alert from "../Parts/Alert";
-
+import { AccessToken } from "../../Contexts/User/AuthContext";
 function Login() {
 
     const { state } = useLocation();
@@ -9,22 +9,24 @@ function Login() {
     const passwordRef = useRef(null);
     const emailRef = useRef(null);
     const navigate = useNavigate();
-
-    const registerAPI = async () =>{
+    const {token , setToken} = useContext(AccessToken);
+    
+    const loginAPI = async () =>{
       
         
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/login/" ,{
+            const response = await fetch("http://127.0.0.1:8000/api/users/login/" ,{
             
                 headers: {
                     "Content-Type": "application/json",
                 },
                 method : "POST",
+                include : true,
                 body : JSON.stringify({
                     "email" : emailRef.current.value,
                     "password": passwordRef.current.value
                 }),
-             
+              
             })
         
             
@@ -32,10 +34,12 @@ function Login() {
                 throw new Error("Something Worng" , response)
             }
             else{
-                // const json = await response.json();
+                const json = await response.json();
                 // // localStorage.setItem("user_token" , await json.token);
                 // // localStorage.setItem("user_id" , json.user_id)
-                navigate("/");
+                setToken(json.access_token)
+                
+                // navigate("/");
             }   
         } catch (error) {
             console.log("Error Happend" ,error )
@@ -44,10 +48,9 @@ function Login() {
     }
 
     useEffect(() =>{
-        if(localStorage.getItem("user_id") && localStorage.getItem("user_token")){
-            navigate("/");
-        }
-    },[])
+        console.log(token);
+        
+    },[token])
 
     return ( 
         <>
@@ -70,7 +73,7 @@ function Login() {
                     hover:bg-[var(--btn-l)] active:bg-[var(--btn)]  hover:scale-110
                     
                     
-                    " type="button" value="Create" onClick={registerAPI} />
+                    " type="button" value="Create" onClick={loginAPI} />
                 </form>
 
 
