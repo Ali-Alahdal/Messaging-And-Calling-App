@@ -1,7 +1,10 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { json, Link, useLocation, useNavigate } from "react-router-dom";
 import Alert from "../Parts/Alert";
 import { AccessToken } from "../../Contexts/User/AuthContext";
+import { loginAPI } from "../../Hooks/Apis";
+
+
 function Login() {
 
     const { state } = useLocation();
@@ -11,50 +14,33 @@ function Login() {
     const navigate = useNavigate();
     const {token , setToken} = useContext(AccessToken);
     
-    const loginAPI = async () =>{
+    
+    const [showAlert , setShowAlert] = useState(false);
+
+    const callLogin = async () =>{
       
-        
-        try {
-            const response = await fetch("http://127.0.0.1:8000/api/users/login/" ,{
-            
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                method : "POST",
-                include : true,
-                body : JSON.stringify({
-                    "email" : emailRef.current.value,
-                    "password": passwordRef.current.value
-                }),
-              
-            })
-        
-            
-            if(!response.ok){
-                throw new Error("Something Worng" , response)
-            }
-            else{
-                const json = await response.json();
-                // // localStorage.setItem("user_token" , await json.token);
-                // // localStorage.setItem("user_id" , json.user_id)
-                setToken(json.access_token)
-                
-                // navigate("/");
-            }   
-        } catch (error) {
-            console.log("Error Happend" ,error )
-            
+        const response = await loginAPI(emailRef.current.value , passwordRef.current.value );
+        if(response.success){
+            setToken(response.access_token);
+            navigate("/")
+        }else{
+       
+            setShowAlert(true);
         }
+       
+     
     }
 
     useEffect(() =>{
-        console.log(token);
+      
         
-    },[token])
+    }, [token])
+
 
     return ( 
         <>
-        <Alert show={state}  />
+        <Alert show={state} success={state} successMessage = " Your Account Has Been Created. " />
+        <Alert show={showAlert} success={false} errorMessage="Email or Password is not valid!"  />
         <main className="w-full bg-[var(--bg)] h-full  content-center">
             
             <div className="bg-[var(--bgS)] max-w-[40%] w-auto  h-auto m-auto p-8 ">
@@ -73,7 +59,7 @@ function Login() {
                     hover:bg-[var(--btn-l)] active:bg-[var(--btn)]  hover:scale-110
                     
                     
-                    " type="button" value="Create" onClick={loginAPI} />
+                    " type="button" value="Create" onClick={callLogin} />
                 </form>
 
 

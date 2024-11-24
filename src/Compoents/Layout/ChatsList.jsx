@@ -1,23 +1,29 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Chat from "../Parts/Chat";
 import '../../App.css'
 import axios from "axios";
+import { getChatsAPI } from "../../Hooks/Apis";
+import { AccessToken } from "../../Contexts/User/AuthContext";
 function ChatsList(props) {
     
+    const {token , setToken} = useContext(AccessToken)
+
     const [chats,setChats] = useState([]);
     const re = async () => {
         try {
-            const response = await axios.post(`http://127.0.0.1:8000/api/users/refresh/`,{
-                withCredentials : true
-            });
+            const response = await axios.post('http://127.0.0.1:8000/api/users/refresh/', {}, {
+                withCredentials: true,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
 
             if(!response.ok){
                 console.log(response);
-                
                 throw new Error(response)
             }else{
                 const json =  await response.json();
-                setChats(json);
+                console.log(json);
             }
             
             
@@ -26,30 +32,14 @@ function ChatsList(props) {
             
         }
     }
-    const fetchChats = async () =>{
-
-        try {
-            const response = await axios.get(`http://127.0.0.1:8000/api/messaging/getChats/`,{
-                withCredentials : true
-            });
-
-            console.log(response);
-            
-            if(!response.ok){
-                throw new Error("Error Happend")
-            }else{
-                const json =  await response.json();
-                setChats(json);
-            }
-            
-            
-        } catch (error) {
-            console.log(error);
-            
-        }
-    }
-
+   
     useEffect(() =>{
+        const fetchChats = async () =>{
+            const response = await getChatsAPI();
+            setChats(response)
+            
+        }
+    
         fetchChats();
     },[])
     return ( 
@@ -57,7 +47,7 @@ function ChatsList(props) {
             <section className="bg-[var(--bgS)] w-[30%] h-[80%] flex-1 ">
                 {chats ?
                     chats.map((chat , index) =>{
-                        return  <Chat setAsCurrent={props.setCurrentChat} key={chat.id} receiver={chat.user_2} username={chat.username_2}/>
+                        return  <Chat setAsCurrent={props.setCurrentChat} key={index} receiver={chat.user_2} username={chat.username_2}/>
                        
                     })
                 : null}

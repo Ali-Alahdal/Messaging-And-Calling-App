@@ -10,11 +10,7 @@ function Main() {
     const [currentChat , setCurrentChat] = useState();
 
 
-    // useEffect(() =>{
-    //     if(!localStorage.getItem("user_id") || !localStorage.getItem("user_token")){
-    //         navigate("/login");
-    //     }
-    // },[])
+    
 
     useEffect(() =>{
         console.log(currentChat);
