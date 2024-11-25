@@ -37,6 +37,7 @@ function ChatsList(props) {
         const fetchChats = async () =>{
             const response = await getChatsAPI();
             setChats(response)
+            console.log(response);
             
         }
     
@@ -47,7 +48,7 @@ function ChatsList(props) {
             <section className="bg-[var(--bgS)] w-[30%] h-[80%] flex-1 ">
                 {chats ?
                     chats.map((chat , index) =>{
-                        return  <Chat setAsCurrent={props.setCurrentChat} key={index} receiver={chat.user_2} username={chat.username_2}/>
+                        return  <Chat setAsCurrent={props.setCurrentChat} key={index} receiver={chat.chatUser_id} username={chat.chat_name}/>
                        
                     })
                 : null}

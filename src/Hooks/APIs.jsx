@@ -30,21 +30,15 @@ export const refreshAPI = async () => {
     return response.data.access
 }
 
-export const getChatsAPI = async (token) => {
+export const getChatsAPI = async () => {
     try {
         const response = await axios.get(`${url_messaging}/getChats/`  , {
             withCredentials : true
         });
         return response.data
     } catch (error) {
-        callRefresh(error ,axios.get(`${url_messaging}/getChats/`  , {
-            withCredentials : true
-        }) )
+        callRefresh(error ,getChatsAPI)
     }
-    
-
-
-
     
 }
 
