@@ -41,7 +41,7 @@ function ChatsList(props) {
             
         }
     
-        fetchChats();
+        // fetchChats();
     },[])
     return ( 
        

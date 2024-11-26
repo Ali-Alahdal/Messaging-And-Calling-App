@@ -1,6 +1,27 @@
+import { useEffect } from "react";
 
 
 function CurrentChat() {
+
+    useEffect(() =>{
+        const url = "ws://127.0.0.1:8000/ws/chat/";
+        const ws = new WebSocket(url)
+
+        ws.onopen = (event) =>{
+            console.log("Connection is Opend");
+            console.log(event);
+            
+        }
+        
+        ws.onclose = () =>{
+            console.log("Connection Closed!");
+            console.log(event);
+        }
+        ws.onerror = (event) =>{
+            console.log(event);
+            
+        }
+    }, [])
     return ( 
         <>
         
