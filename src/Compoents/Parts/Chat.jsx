@@ -4,7 +4,7 @@ function Chat(props) {
 
     return ( 
         <>
-            <div className="w-full h-1/6  flex mb-2  " onClick={() => {props.setAsCurrent(props.receiver);
+            <div className="w-full h-1/6  flex mb-2  " onClick={() => {props.setAsCurrent(props.chat_id);
              }}>
                 
                 <div className="h-full w-[70px] min-w-[65px] content-center ms-2">

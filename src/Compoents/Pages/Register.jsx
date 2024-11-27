@@ -14,7 +14,7 @@ function Register() {
         console.log(usernameRef.current.value , emailRef.current.value ,passwordRef.current.value);
         
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/register/" ,{
+            const response = await fetch("http://127.0.0.1:8000/api/users/register/" ,{
             
                 headers: {
                     "Content-Type": "application/json",
