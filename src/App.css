@@ -8,3 +8,19 @@ body{
 #root{
     height: 100%;
 }
+
+::-webkit-scrollbar {
+    /* Customize the scrollbar width */
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    /* Customize the scrollbar track */
+    /* background: var(--btn); */
+}
+
+::-webkit-scrollbar-thumb {
+    /* Customize the scrollbar thumb */
+    background: var(--bgS);
+    border-radius: 5px;
+}

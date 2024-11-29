@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root{
-    --bg : white;
-    --bgS : #75b2ad;
-    --btn : #27363b;
-    --btn-l : #2f4850;
+    --bg : #466493;
+    --bgS : #BED8EF;
+    --btn : #466493;
+    --btn-l : #466493;
 }

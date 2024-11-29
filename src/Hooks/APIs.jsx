@@ -43,6 +43,20 @@ export const getChatsAPI = async () => {
 }
 
 
+export const createChatsAPI = async (participnats) => {
+    try {
+        const response = await axios.post(`${url_messaging}/createChat/`, {
+            "participants" : [participnats]
+        }  , {
+            withCredentials : true
+        });
+        return response.data
+    } catch (error) {
+        callRefresh(error ,createChatsAPI(participnats))
+    }
+    
+}
+
 export const callRefresh = async (err , func)  =>{
 
     if(err.response.status = 401){

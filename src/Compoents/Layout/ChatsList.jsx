@@ -37,15 +37,15 @@ function ChatsList(props) {
         const fetchChats = async () =>{
             const response = await getChatsAPI();
             setChats(response)
-            // console.log(response);
+            console.log(response);
             
         }
     
         fetchChats();
-    },[])
+    },[props.currentMenu ])
     return ( 
        
-            <section className="bg-[var(--bgS)] w-[30%] h-[80%] flex-1 ">
+            <section className=" bg-[var(--bgS)] w-[90%] h-auto flex-1  ">
                 {chats ?
                     chats.map((chat , index) =>{
                         return  <Chat setAsCurrent={props.setCurrentChat} key={index} receiver={chat.chatUser_id} username={chat.chat_name} chat_id={chat.chat_id} />
