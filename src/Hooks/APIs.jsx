@@ -43,10 +43,12 @@ export const getChatsAPI = async () => {
 }
 
 
-export const createChatsAPI = async (participnats) => {
+export const createChatsAPI = async (chat_name , participnats) => {
     try {
         const response = await axios.post(`${url_messaging}/createChat/`, {
-            "participants" : [participnats]
+            "chat_name" : chat_name,
+            "participants" : participnats
+            
         }  , {
             withCredentials : true
         });

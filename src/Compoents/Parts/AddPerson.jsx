@@ -5,7 +5,7 @@ function AddPerson(props) {
 
 
     const addNewPerson = async () =>{
-        const response = await createChatsAPI(props.user_id);
+        const response = await createChatsAPI("",[props.user_id]);
         console.log(response);
         
     }
