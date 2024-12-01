@@ -13,7 +13,7 @@ function Main() {
 
 
     
-    const [currentMenu , setCurrentMenu] = useState("addPepole");
+    const [currentMenu , setCurrentMenu] = useState("chats");
     useEffect(() =>{
         console.log(currentChat);
         
@@ -25,7 +25,7 @@ function Main() {
             <Menu setCurrentMenu={setCurrentMenu} />
             {
                 currentMenu == "chats" ? 
-                <ChatsList setCurrentChat={setCurrentChat} currentMenu ={currentMenu} />  
+                <ChatsList setCurrentChat={setCurrentChat} currentChat={currentChat} currentMenu={currentMenu} />  
                 : null  
                 
             }

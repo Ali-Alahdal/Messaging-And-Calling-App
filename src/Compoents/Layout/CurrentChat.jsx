@@ -10,47 +10,51 @@ function CurrentChat(props ) {
   
 
 
-    const url = `ws://127.0.0.1:8000/ws/chat/${props.currentChat}`;
-    const ws = new WebSocket(url)
+   
    
 
     const [messages , setMessages] = useState([]);
     const [toggleEmojis , setToggleEmojis] = useState(false);
     
-    
+    const url = `ws://127.0.0.1:8000/ws/chat/${props.currentChat}`;
+    let ws = null;
+    if(props.currentChat != undefined){
+         ws = new WebSocket(url)
+    }
+   
     
     const emojis = ["😂" , "😏", "😘", "😝", "🥶",  "😡" , "😍" ,"😭" , "🥲" , "🤣" , "☺️" , "🤓" , "😶‍🌫️" , "😵‍💫" , "🤤" , "🤥", "👋" , "🖐" , "👌" , "✌️" , "🤏" , "🤟" , "🤙" , "🫵" , "🫱" , "👏" , "👆" , "👈" , "👉" , "👇" , "👍" , "👎" , "💪"]
     useEffect(() =>{
-        ws.onopen = (event) =>{
-            console.log("Connection is Opend");
-            console.log(event);
+        if(props.currentChat != undefined){
+            ws.onopen = (event) =>{
+                console.log("Connection is Opend");
+                console.log(event);
+                
+            }
+            ws.onmessage = async (event) =>{
+                const json  = JSON.parse(event.data)
+                console.log(messages);
+                
+            setMessages(  
+                
+                JSON.parse(event.data)
+                
+            )
+                // messages.push(JSON.parse(event.data))
             
-        }
-        ws.onmessage = async (event) =>{
-            const json  = JSON.parse(event.data)
-            console.log(messages);
-            
-           setMessages(  
-            
-            JSON.parse(event.data)
-            
-           )
-            // messages.push(JSON.parse(event.data))
-           
-        }
-        ws.onclose = () =>{
-            console.log("Connection Closed!");
-            // console.log(event);
-        }
-    
-        ws.onerror = (event) =>{
-            console.log(event);
-            
-        }
+            }
+            ws.onclose = () =>{
+                console.log("Connection Closed!");
+                // console.log(event);
+            }
         
-      
-
-    },[ws.onmessage, ws.onopen, props.currentChat ])
+            ws.onerror = (event) =>{
+                console.log(event);
+                
+            }
+        
+        }
+    },[ws?.onmessage, ws?.onopen, props.currentChat ])
     
    
   
@@ -81,6 +85,7 @@ function CurrentChat(props ) {
         <section  className="fixed bottom-[57px] w-[70%] h-auto  top-0 right-0 flex-1 bg-repeat bg-cover p-2 overflow-auto  "
             style={{backgroundImage:`url(${Chat_Background})`}}
         >
+            
             {messages?.length ?  messages.map((message , index) =>{
                 const lastMessage = messages.length;
                  if (lastMessage == index +1 ){

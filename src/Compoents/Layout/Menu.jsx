@@ -5,7 +5,7 @@ function Menu(props) {
     const [dialogActive , setDialogActive] = useState(false);
 
     return ( 
-        <section className="relative   bg-[#1f3354] w-[10%] h-auto p-[4px]     ">
+        <section className="relative bg-[#1f3354] w-[10%] h-auto p-[4px]     ">
             
        
         <div onClick={() =>props.setCurrentMenu("chats")} className=" text-white my-5  py-1  border border-solid border-white items-center  ">

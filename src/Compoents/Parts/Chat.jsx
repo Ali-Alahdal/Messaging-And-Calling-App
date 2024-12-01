@@ -1,10 +1,18 @@
+import { useEffect, useRef } from "react";
 import profileImage from "../../Assets/profile.png"
 
 function Chat(props) {
-
+    const refDiv = useRef(null);
+    useEffect(() =>{
+        if(props.current == props.chat_id){
+            refDiv.current.classList.add("bg-[var(--bg)]");
+        }else{
+            refDiv.current.classList.remove("bg-[var(--bg)]");
+        }
+    }, [props.current])
     return ( 
         <>
-            <div className="w-full   flex my-4   " onClick={() => {props.setAsCurrent(props.chat_id);
+            <div ref={refDiv} className={"w-full flex my-2 py-5 " } onClick={() => {props.setAsCurrent(props.chat_id);
              }}>
                 
                 <div className="h-full w-[70px] min-w-[65px] content-center ms-2">

@@ -87,7 +87,7 @@ function Dialog(props) {
             </div>
 
             {
-                chats.map((chat , index) =>{
+              chats?.length ? chats.map((chat , index) =>{
                     return (
                         <form   key={index} className="flex border-b border-white">
                             <div className="content-center  w-full ">   
@@ -101,7 +101,8 @@ function Dialog(props) {
                             
                         </form>
                     ) 
-                }) 
+                  
+                })   : null
             }
 
             <div onClick={createGroup} className=" bg-green-700 sticky bottom-3 place-self-end me-2 text-white p-2 rounded-full w-10" >

@@ -65,7 +65,7 @@ function AddPepole() {
     // },[promot])
 
     return ( 
-        <section className="w-[90%] bg-[var(--bgS)]  h-auto flex-1  ">
+        <section className="w-[90%] bg-[var(--bgS)]  h-auto flex-1 overflow-auto  " style={{scrollbarWidth:"none"}}>
                
                <div className="flex bg-[var(--bg)]   p-3 text-center items-center   ">
 
