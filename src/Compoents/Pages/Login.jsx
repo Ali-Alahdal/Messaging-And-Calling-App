@@ -1,7 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { json, Link, useLocation, useNavigate } from "react-router-dom";
 import Alert from "../Parts/Alert";
-import { AccessToken } from "../../Contexts/User/AuthContext";
 import { loginAPI } from "../../Hooks/Apis";
 
 
@@ -12,7 +11,6 @@ function Login() {
     const passwordRef = useRef(null);
     const emailRef = useRef(null);
     const navigate = useNavigate();
-    const {token , setToken} = useContext(AccessToken);
     
     
     const [showAlert , setShowAlert] = useState(false);
@@ -21,7 +19,7 @@ function Login() {
       
         const response = await loginAPI(emailRef.current.value , passwordRef.current.value );
         if(response.success){
-            setToken(response.access_token);
+           
             navigate("/")
         }else{
        
@@ -31,10 +29,7 @@ function Login() {
      
     }
 
-    useEffect(() =>{
-      
-        
-    }, [token])
+    
 
 
     return ( 
