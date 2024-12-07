@@ -1,17 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { json } from "react-router-dom";
 import Message from "../Parts/Message";
 import Chat_Background from "../../Assets/chat_background.jpeg"
-
+import { UserId } from "../../Contexts/User/UserContext";
 function CurrentChat(props ) {
 
     const refInput = useRef(null);
     const refLastMessage = useRef();
   
 
-
+    const {userId} = useContext(UserId)
    
-   
+    const [formatedUserId , setFormatedUserId] = useState()
 
     const [messages , setMessages] = useState([]);
     const [toggleEmojis , setToggleEmojis] = useState(false);
@@ -40,11 +40,9 @@ function CurrentChat(props ) {
                 JSON.parse(event.data)
                 
             )
-                // messages.push(JSON.parse(event.data))
             
             }
             ws.onclose = () =>{
-                console.log("Connection Closed!");
                 // console.log(event);
             }
         
@@ -75,6 +73,8 @@ function CurrentChat(props ) {
             // console.log(refLastMessage);
             
         }
+        console.log(messages);
+        setFormatedUserId(userId?.toString().replaceAll("-" , ""))
         
     },[messages ])
 
@@ -86,9 +86,9 @@ function CurrentChat(props ) {
             style={{backgroundImage:`url(${Chat_Background})`}}
         >
             
-            {messages?.length ?  messages.map((message , index) =>{
-                const lastMessage = messages.length;
-                 if (lastMessage == index +1 ){
+            { messages?.length ?  messages.map((message , index) =>{
+               
+                 if (message.sender_id == formatedUserId ){
                     return (<Message key={index} content={message.content} lastMessage={refLastMessage} style={"place-self-end"} /> );
                  }
                  else{
@@ -97,7 +97,7 @@ function CurrentChat(props ) {
             }) : <div ref={props.lastMessage} className={" p-3 bg-[var(--bg)] text-white rounded-2xl gap-3 h-max  my-2 w-max max-w-[500px] max-h-auto overflow-x-hidden place-self-center " + props.style} >
                     <span className="w-100  break-all	 ">There are no Messsages </span>
                     
-                    </div>
+                    </div> 
         }
           
 

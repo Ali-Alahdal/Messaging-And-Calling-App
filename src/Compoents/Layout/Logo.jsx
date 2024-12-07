@@ -43,7 +43,7 @@ function Logo() {
                     <img src={Person_Image} alt="" className="rounded-full w-full  h-[70%] border-white border-2" />
                 </div>
 
-                <div className="h-full  content-center ms-2 max-w=[">
+                <div className="h-full  content-center ms-2 max-w-[200px] ">
                     <h1 className="text-lg font-bold"> Welcome, { username?.toUpperCase()} </h1>
                 </div>
 
