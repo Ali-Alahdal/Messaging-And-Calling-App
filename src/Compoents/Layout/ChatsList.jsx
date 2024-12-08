@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import Chat from "../Parts/Chat";
 import '../../App.css'
 import axios from "axios";
-import { getChatsAPI } from "../../Hooks/Apis";
+import { getChatsAPI } from "../../Hooks/APIs";
 import GroupChat from "../Parts/GroupChat";
 function ChatsList(props) {
     

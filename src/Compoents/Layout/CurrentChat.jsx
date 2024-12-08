@@ -3,6 +3,9 @@ import { json } from "react-router-dom";
 import Message from "../Parts/Message";
 import Chat_Background from "../../Assets/chat_background.jpeg"
 import { UserId } from "../../Contexts/User/UserContext";
+import PersonImage from "../../Assets/person_image.jpg"
+import { CurrentReceiver } from "../../Contexts/Chats/CureentChatContext";
+
 function CurrentChat(props ) {
 
     const refInput = useRef(null);
@@ -15,6 +18,7 @@ function CurrentChat(props ) {
 
     const [messages , setMessages] = useState([]);
     const [toggleEmojis , setToggleEmojis] = useState(false);
+    const {currentReceiver } = useContext(CurrentReceiver)
     
     const url = `ws://127.0.0.1:8000/ws/chat/${props.currentChat}`;
     let ws = null;
@@ -27,27 +31,17 @@ function CurrentChat(props ) {
     useEffect(() =>{
         if(props.currentChat != undefined){
             ws.onopen = (event) =>{
-                console.log("Connection is Opend");
-                console.log(event);
                 
             }
             ws.onmessage = async (event) =>{
-                const json  = JSON.parse(event.data)
-                console.log(messages);
                 
-            setMessages(  
-                
-                JSON.parse(event.data)
-                
-            )
+                setMessages(JSON.parse(event.data))
             
             }
             ws.onclose = () =>{
-                // console.log(event);
             }
         
             ws.onerror = (event) =>{
-                console.log(event);
                 
             }
         
@@ -73,26 +67,50 @@ function CurrentChat(props ) {
             // console.log(refLastMessage);
             
         }
-        console.log(messages);
         setFormatedUserId(userId?.toString().replaceAll("-" , ""))
         
     },[messages ])
 
+    useEffect(() =>{
+        console.log(currentReceiver);
+        
 
+    }, [currentReceiver])
     return ( 
         <>
-        
-        <section  className="fixed bottom-[57px] w-[70%] h-auto  top-0 right-0 flex-1 bg-repeat bg-cover p-2 overflow-auto  "
+        <section className="fixed  flex w-[70%] h-auto max-h-[103px]  top-0 right-0 flex-1 bg-repeat bg-cover p-2 overflow-auto z-30  bg-[var(--bgS)]
+        drop-shadow-md
+        ">
+
+                <div className=" h-full w-[85px] min-w-[65px] content-center ms-2">
+                    <img src={PersonImage} alt="" className="rounded-full  border border-white w-full  h-[80%]" />
+                </div>
+                <div className="content-center ms-3">
+                    <h1 className="text-3xl "> {currentReceiver }    </h1>
+                </div>
+
+                <div className="absolute content-center m-0 p-0 place-self-center right-16 h-full">
+
+                <svg className="size-8 text-green-600 " xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" >
+                    <path fillRule="evenodd" d="M1.5 4.5a3 3 0 0 1 3-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 0 0 6.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 0 1 1.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 0 1-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5Z" clipRule="evenodd" />
+                </svg>
+
+                </div>
+
+
+        </section>
+
+        <section  className="fixed bottom-[57px] w-[70%] h-auto  top-[102px] right-0 flex-1 bg-repeat bg-cover p-2 overflow-auto  "
             style={{backgroundImage:`url(${Chat_Background})`}}
         >
             
             { messages?.length ?  messages.map((message , index) =>{
                
                  if (message.sender_id == formatedUserId ){
-                    return (<Message key={index} content={message.content} lastMessage={refLastMessage} style={"place-self-end"} /> );
+                    return (<Message key={index} content={message.content} lastMessage={refLastMessage} time={message.sent_time} style={"place-self-end"} /> );
                  }
                  else{
-                    return (<Message key={index} content={message.content} l style={"place-self-start"} />  );
+                    return (<Message key={index} content={message.content} time={message.sent_time} style={"place-self-start"} />  );
                  }
             }) : <div ref={props.lastMessage} className={" p-3 bg-[var(--bg)] text-white rounded-2xl gap-3 h-max  my-2 w-max max-w-[500px] max-h-auto overflow-x-hidden place-self-center " + props.style} >
                     <span className="w-100  break-all	 ">There are no Messsages </span>
@@ -125,8 +143,8 @@ function CurrentChat(props ) {
                
 
 
-                <input className="outline-none w-[80%] ms-3 p-2" type="text" placeholder="write your message ........"  ref={refInput}  />
-                <input type="submit" value="send" className="bg-[var(--bgS)] ms-3 w-20 p-2 rounded-full text-white" />
+                <input disabled={props?.currentChat ? false : true } className="outline-none w-[80%] ms-3 p-2" type="text" placeholder="write your message ........"  ref={refInput}  />
+                <input disabled={props?.currentChat ? false : true } type="submit" value="send" className="bg-[var(--bgS)] ms-3 w-20 p-2 rounded-full text-white" />
             </form>
           
         </section>

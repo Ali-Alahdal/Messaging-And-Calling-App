@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useEffect } from "react";
-import { createChatsAPI, getChatsAPI } from "../../Hooks/Apis";
+import { createChatsAPI, getChatsAPI } from "../../Hooks/APIs";
 import Chat from "../Parts/Chat";
 
 
@@ -23,7 +23,6 @@ function Dialog(props) {
         const fetchChats = async () =>{
             const response = await getChatsAPI();
             setChats(response)
-            console.log(response);
             
         }
     
@@ -36,7 +35,6 @@ function Dialog(props) {
         const { name, checked } = event.target;
         setSelectedUsers({ ...selectedUsers, [name]: checked });
 
-        console.log(event.target.value);
         
     };
 
@@ -47,7 +45,6 @@ function Dialog(props) {
             refName.current.value,
             Object.keys(selectedUsers).filter((key) => selectedUsers[key])
         );
-        console.log(response);
         
     }
 
@@ -56,8 +53,6 @@ function Dialog(props) {
         if(props.active){
             refDiv.current.classList.remove("hidden");
             refDiv2.current.classList.remove("hidden");
-            console.log(refDiv);
-            console.log("works 2");
         }else{
             refDiv.current?.classList.add("hidden");
             refDiv2.current?.classList.add("hidden");
@@ -89,6 +84,7 @@ function Dialog(props) {
             {
               chats?.length ? chats.map((chat , index) =>{
                     return (
+                        !chat.group ? 
                         <form   key={index} className="flex border-b border-white">
                             <div className="content-center  w-full ">   
                                 <Chat    username={chat.chat_name} chat_id={chat.chat_id} />
@@ -99,7 +95,7 @@ function Dialog(props) {
                                 
                             </div>
                             
-                        </form>
+                        </form> : null
                     ) 
                   
                 })   : null

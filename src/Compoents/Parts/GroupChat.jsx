@@ -1,9 +1,12 @@
 
 import GroupImage from "../../Assets/group_image.jpg"
-import { useRef , useEffect } from "react";
+import { useRef , useEffect, useContext } from "react";
+import { CurrentReceiver } from "../../Contexts/Chats/CureentChatContext";
 
 function GroupChat(props) {
     const refDiv = useRef(null);
+
+    const {setCurrentReceiver} = useContext(CurrentReceiver)
     useEffect(() =>{
         if(props.current == props.chat_id){
             refDiv.current.classList.add("bg-[var(--bg)]");
@@ -14,7 +17,7 @@ function GroupChat(props) {
 
     return ( 
         <>
-            <div ref={refDiv} className={"w-full flex my-2 py-5 " } onClick={() => {props.setAsCurrent(props.chat_id);
+            <div ref={refDiv} className={"w-full flex my-2 py-5 " } onClick={() => {props.setAsCurrent(props.chat_id); setCurrentReceiver(props.username)
              }}>
                 
                 <div className="h-full w-[70px] min-w-[65px] content-center ms-2">

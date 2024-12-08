@@ -47,7 +47,6 @@ messaging_endpoint.interceptors.response.use(
             return messaging_endpoint(originalRequest)
             
          } catch (error) {
-            console.log(error);
             
             window.location.href = '/login';
          }
@@ -78,7 +77,6 @@ normal_endpoint.interceptors.response.use(
             return normal_endpoint(originalRequest)
             
          } catch (error) {
-            console.log(error);
             
             window.location.href = '/login';
          }
@@ -123,7 +121,6 @@ export const loginAPI = async (email , password) => {
 export const logoutAPI = async () => {
     
     const response = await user_endpoint.post(`/logout/`);
-    console.log(response);
     
     return  response.data
 }
@@ -133,7 +130,6 @@ export const logoutAPI = async () => {
 export const getProfileAPI = async () => {
     
     const response = await normal_endpoint.get(`/users/getProfile/`);
-    console.log(response);
     
     return  response.data
 }
@@ -151,7 +147,6 @@ export const getChatsAPI = async () => {
         return response.data
     } catch (error) {
         // callRefresh(error ,getChatsAPI);
-        console.log("Server Error");
         
     }
     
@@ -167,8 +162,7 @@ export const createChatsAPI = async (chat_name , participnats) => {
         return response.data
     } catch (error) {
         // callRefresh(error ,createChatsAPI(participnats))
-        console.log("Server Error");
-
+        
     }
     
 }

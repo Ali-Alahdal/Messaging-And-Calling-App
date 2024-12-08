@@ -1,5 +1,5 @@
-import profileImage from "../../Assets/profile.png"
-import { createChatsAPI } from "../../Hooks/Apis";
+import PersonImage from "../../Assets/person_image.jpg"
+import { createChatsAPI } from "../../Hooks/APIs";
 
 function AddPerson(props) {
 
@@ -15,7 +15,7 @@ function AddPerson(props) {
            <div className="flex h-full w-5/6   ">
 
                 <div className="h-full w-[85px] min-w-[65px] content-center ms-2">
-                    <img src={profileImage} alt="" className="rounded-full  border border-white w-full  h-[80%]" />
+                    <img src={PersonImage} alt="" className="rounded-full  border border-white w-full  h-[80%]" />
                 </div>
 
                 <div className="ms-3 mt-4 flex justify-between  w-[50%] ">
