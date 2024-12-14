@@ -1,4 +1,4 @@
-import { getProfileAPI, logoutAPI } from "../../Hooks/Apis";
+import { getProfileAPI, logoutAPI } from "../../Hooks/APIs";
 import { useNavigate } from "react-router-dom";
 import Person_Image from "../../Assets/person_image.jpg";
 import { useEffect , useContext } from "react";
