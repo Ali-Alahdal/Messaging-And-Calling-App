@@ -5,13 +5,12 @@ import Chat_Background from "../../Assets/chat_background.jpeg"
 import { UserId } from "../../Contexts/User/UserContext";
 import PersonImage from "../../Assets/person_image.jpg"
 import { CurrentReceiver } from "../../Contexts/Chats/CureentChatContext";
+import CallDailog from "../Boxes/CallDialog";
 
 function CurrentChat(props ) {
 
     const refInput = useRef(null);
     const refLastMessage = useRef();
-  
-
     const {userId} = useContext(UserId)
    
     const [formatedUserId , setFormatedUserId] = useState()
@@ -27,7 +26,11 @@ function CurrentChat(props ) {
     }
    
     
+    
     const emojis = ["😂" , "😏", "😘", "😝", "🥶",  "😡" , "😍" ,"😭" , "🥲" , "🤣" , "☺️" , "🤓" , "😶‍🌫️" , "😵‍💫" , "🤤" , "🤥", "👋" , "🖐" , "👌" , "✌️" , "🤏" , "🤟" , "🤙" , "🫵" , "🫱" , "👏" , "👆" , "👈" , "👉" , "👇" , "👍" , "👎" , "💪"]
+    
+    const [dialogActive , setDialogActive] = useState(false);
+
     useEffect(() =>{
         if(props.currentChat != undefined){
             ws.onopen = (event) =>{
@@ -36,9 +39,10 @@ function CurrentChat(props ) {
             ws.onmessage = async (event) =>{
                 
                 setMessages(JSON.parse(event.data))
-            
+                
             }
             ws.onclose = () =>{
+                
             }
         
             ws.onerror = (event) =>{
@@ -46,9 +50,10 @@ function CurrentChat(props ) {
             }
         
         }
-    },[ws?.onmessage, ws?.onopen, props.currentChat ])
+    },[ws?.onmessage, ws?.onopen, props.currentChat])
     
-   
+    
+    
   
 
     const sendMessage = (e) =>{
@@ -72,7 +77,6 @@ function CurrentChat(props ) {
     },[messages ])
 
     useEffect(() =>{
-        console.log(currentReceiver);
         
 
     }, [currentReceiver])
@@ -89,15 +93,15 @@ function CurrentChat(props ) {
                     <h1 className="text-3xl "> {currentReceiver }    </h1>
                 </div>
 
-                <div className="absolute content-center m-0 p-0 place-self-center right-16 h-full">
+                <div onClick={() => setDialogActive(true)} className="absolute content-center m-0 p-0 place-self-center right-16 h-full">
 
-                <svg className="size-8 text-green-600 " xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" >
-                    <path fillRule="evenodd" d="M1.5 4.5a3 3 0 0 1 3-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 0 0 6.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 0 1 1.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 0 1-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5Z" clipRule="evenodd" />
-                </svg>
+                    <svg className="size-8 text-green-600 " xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" >
+                        <path fillRule="evenodd" d="M1.5 4.5a3 3 0 0 1 3-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 0 0 6.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 0 1 1.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 0 1-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5Z" clipRule="evenodd" />
+                    </svg>
 
                 </div>
 
-
+            <CallDailog currentChat={props.currentChat} active={dialogActive} setIsActive={setDialogActive}/>
         </section>
 
         <section  className="fixed bottom-[57px] w-[70%] h-auto  top-[102px] right-0 flex-1 bg-repeat bg-cover p-2 overflow-auto  "
