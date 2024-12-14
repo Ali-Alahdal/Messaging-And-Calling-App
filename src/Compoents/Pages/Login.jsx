@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { json, Link, useLocation, useNavigate } from "react-router-dom";
 import Alert from "../Parts/Alert";
-import { loginAPI } from "../../Hooks/Apis";
+import { loginAPI } from "../../Hooks/APIs";
 
 
 function Login() {
