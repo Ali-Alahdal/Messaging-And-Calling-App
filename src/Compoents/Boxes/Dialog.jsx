@@ -65,11 +65,11 @@ function Dialog(props) {
     return ( 
         
         <>
-            <div ref={refDiv2} onClick={() => props.setIsActive(false)}  className="fixed w-full h-full top-0  bg-opacity-20 bg-black ">
+            <div ref={refDiv2} onClick={() => props.setIsActive(false)}  className="fixed w-full h-full top-0  bg-opacity-20 bg-black z-40 ">
 
             </div>
 
-            <div ref={refDiv} className="fixed w-1/2 h-1/2 top-[25%] left-[25%]  bg-[var(--bgS)] overflow-y-auto  border-2 border-blue-100 rounded-xl  p-1"
+            <div ref={refDiv} className="fixed w-1/2 h-1/2 top-[25%] left-[25%]  bg-[var(--bgS)] overflow-y-auto  border-2 border-blue-100 rounded-xl  p-1 z-50"
             style={{scrollbarWidth:"none"}} >
 
                 <div className="relative w-100 h-20 p-2 text-center bg-[var(--bg)] rounded-xl ">

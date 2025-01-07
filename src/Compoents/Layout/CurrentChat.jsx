@@ -22,33 +22,24 @@ function CurrentChat(props ) {
     const url = `ws://127.0.0.1:8000/ws/chat/${props.currentChat}`;
     let ws = null;
     if(props.currentChat != undefined){
-         ws = new WebSocket(url)
+        ws = new WebSocket(url)
     }
    
     
     
     const emojis = ["😂" , "😏", "😘", "😝", "🥶",  "😡" , "😍" ,"😭" , "🥲" , "🤣" , "☺️" , "🤓" , "😶‍🌫️" , "😵‍💫" , "🤤" , "🤥", "👋" , "🖐" , "👌" , "✌️" , "🤏" , "🤟" , "🤙" , "🫵" , "🫱" , "👏" , "👆" , "👈" , "👉" , "👇" , "👍" , "👎" , "💪"]
     
-    const [dialogActive , setDialogActive] = useState(false);
+
 
 
     useEffect(() =>{
         if(props.currentChat != undefined){
-            ws.onopen = (event) =>{
-                
-            }
+         
             ws.onmessage = async (event) =>{
                 
                 setMessages(JSON.parse(event.data))
                 const audio = new Audio(Osman)
                 audio.play()
-            }
-            ws.onclose = () =>{
-                
-            }
-        
-            ws.onerror = (event) =>{
-                
             }
         
         }
@@ -77,10 +68,7 @@ function CurrentChat(props ) {
         
     },[messages ])
 
-    useEffect(() =>{
-        
-
-    }, [currentReceiver])
+ 
     return ( 
         currentReceiver ?  
         

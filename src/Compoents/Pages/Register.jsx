@@ -37,7 +37,7 @@ function Register() {
                
             }
             else{
-                console.log(await response.json());
+               
                 navigate("/login" , { state : true})
             }
         } catch (error) {
@@ -46,11 +46,7 @@ function Register() {
         }
     }
 
-    useEffect(() =>{
-        if(localStorage.getItem("user_id") && localStorage.getItem("user_token")){
-            navigate("/");
-        }
-    },[])
+
     return ( 
         <main className="w-full bg-[var(--bg)] h-full  content-center">
             

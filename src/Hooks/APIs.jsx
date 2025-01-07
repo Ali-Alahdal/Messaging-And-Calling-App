@@ -159,10 +159,13 @@ export const createChatsAPI = async (chat_name , participnats) => {
             "participants" : participnats
             
         });
+        console.log(response);
         return response.data
+        
+        
     } catch (error) {
         // callRefresh(error ,createChatsAPI(participnats))
-        
+        console.log(error);
     }
     
 }
