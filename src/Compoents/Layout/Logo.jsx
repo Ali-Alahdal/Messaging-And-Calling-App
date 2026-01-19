@@ -1,41 +1,41 @@
 import { getProfileAPI, logoutAPI } from "../../Hooks/APIs";
 import { useNavigate } from "react-router-dom";
 import Person_Image from "../../Assets/person_image.jpg";
-import { useEffect , useContext } from "react";
-import { UserId , Username } from "../../Contexts/User/UserContext";
+import { useEffect, useContext } from "react";
+import { UserId, Username } from "../../Contexts/User/UserContext";
 function Logo() {
 
     const navigator = useNavigate();
 
 
-    const {userId , setUserId}  = useContext(UserId)
-    const {username , setUsername}  = useContext(Username)
+    const { userId, setUserId } = useContext(UserId)
+    const { username, setUsername } = useContext(Username)
 
     const logout = async () => {
         const response = await logoutAPI();
-        if(response.success){
+        if (response.success) {
             navigator("/login")
         }
-        
+
     }
 
-    useEffect(() =>{
+    useEffect(() => {
         const getProfile = async () => {
-            const response = await getProfileAPI();    
-            if(!response.success){
+            const response = await getProfileAPI();
+            if (!response.success) {
                 navigator("/login")
-            }else{
+            } else {
                 // console.log(response.user_id);
-                
-                setUserId(response.user_id)
-                setUsername(response.username)
+
+                setUserId(response.data.uid)
+                setUsername(response.data.username)
             }
-            
+
         }
 
         getProfile();
-    },[])
-    return ( 
+    }, [])
+    return (
         <>
             <div className="relative w-[30%] bg-[var(--btn-l)]  text-[#eee8f6] h-[20%] flex ">
 
@@ -44,16 +44,16 @@ function Logo() {
                 </div>
 
                 <div className="h-full  content-center ms-2 max-w-[200px] ">
-                    <h1 className="text-lg font-bold"> Welcome, { username?.toUpperCase()} </h1>
+                    <h1 className="text-lg font-bold"> Welcome, {username?.toUpperCase()} </h1>
                 </div>
 
                 <div className="absolute right-2 bottom-2 rounded-xl   ">
                     <button onClick={logout} className="rounded-xl  text-sm font-bold bg-red-500 p-2 mt-2">Logout</button>
                 </div>
-               
+
             </div>
         </>
-     );
+    );
 }
 
 export default Logo;

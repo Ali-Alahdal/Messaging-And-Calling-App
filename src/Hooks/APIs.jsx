@@ -41,6 +41,7 @@ export const registerAPI = async (first_name, last_name, email, username, passwo
             last_name,
             email,
             username,
+            username_lowercase: username.toLowerCase() // Add lowercase field for searching
         });
 
         return { success: true, user: { uid: user.uid, email: user.email, username } };
@@ -53,6 +54,21 @@ export const registerAPI = async (first_name, last_name, email, username, passwo
 export const loginAPI = async (email, password) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        // Auto-repair: Ensure username_lowercase exists for legacy users upon login
+        const user = userCredential.user;
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            if (userData.username && !userData.username_lowercase) {
+                await setDoc(userDocRef, {
+                    username_lowercase: userData.username.toLowerCase()
+                }, { merge: true });
+            }
+        }
+
         return { success: true, user: userCredential.user };
     } catch (error) {
         console.error("Login Error:", error);
@@ -103,24 +119,48 @@ export const searchUsersAPI = async (searchTerm) => {
         const currentUser = auth.currentUser;
         if (!currentUser) return [];
 
-        // Firestore prefix search
-        const q = query(
+        const searchTermLower = searchTerm.toLowerCase();
+        const searchTermCapitalized = searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1).toLowerCase();
+
+        // 1. New users (case-insensitive)
+        const q1 = query(
+            collection(db, "users"),
+            where("username_lowercase", ">=", searchTermLower),
+            where("username_lowercase", "<=", searchTermLower + '\uf8ff')
+        );
+
+        // 2. Legacy users (exact case) -> Mostly useful if they typed it exactly right
+        const q2 = query(
             collection(db, "users"),
             where("username", ">=", searchTerm),
             where("username", "<=", searchTerm + '\uf8ff')
         );
 
-        const querySnapshot = await getDocs(q);
-        const users = [];
+        // 3. Legacy users (Capitalized) -> Handles "ali" -> "Ali"
+        const q3 = query(
+            collection(db, "users"),
+            where("username", ">=", searchTermCapitalized),
+            where("username", "<=", searchTermCapitalized + '\uf8ff')
+        );
 
-        querySnapshot.forEach((doc) => {
-            // Exclude current user
-            if (doc.id !== currentUser.uid) {
-                users.push({ id: doc.id, ...doc.data() });
+        const [snap1, snap2, snap3] = await Promise.all([
+            getDocs(q1),
+            getDocs(q2),
+            getDocs(q3)
+        ]);
+
+        const usersMap = new Map();
+        const processDoc = (doc) => {
+            if (doc.id !== currentUser.uid && !usersMap.has(doc.id)) {
+                usersMap.set(doc.id, { id: doc.id, ...doc.data() });
             }
-        });
+        };
 
-        return users;
+        snap1.forEach(processDoc);
+        snap2.forEach(processDoc);
+        snap3.forEach(processDoc);
+
+        return Array.from(usersMap.values());
     } catch (error) {
         console.error("Search Users Error:", error);
         throw error;
@@ -148,20 +188,30 @@ export const getChatsAPI = async () => {
         const chats = [];
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            // Determine which name to show
-            // If current user is the creator, show 'chat_name' (Target Name)
-            // If current user is NOT the creator, show 'chat_name2' (Creator Name)
-            // Fallback to 'chat_name' if 'chat_name2' is missing
             let displayName = data.chat_name;
-            if (data.createdBy !== user.uid && data.chat_name2) {
-                displayName = data.chat_name2;
+            let otherUserId = null;
+
+            if (data.group) {
+                // It's a group, strictly use the group name set by creator
+                displayName = data.chat_name;
+            } else {
+                // Logic to determine other user's ID
+                // If it's a 1-on-1 chat (2 participants), find the ID that isn't the current user
+                if (data.participants && data.participants.length === 2) {
+                    otherUserId = data.participants.find(p => p !== user.uid);
+                }
+
+                if (data.createdBy !== user.uid && data.chat_name2) {
+                    displayName = data.chat_name2;
+                }
             }
 
             chats.push({
                 id: doc.id,
                 ...data,
                 // Override chat_name with the correct display name for the frontend
-                chat_name: displayName
+                chat_name: displayName,
+                other_user_id: otherUserId // Add this for Dialog usage
             });
         });
 
@@ -172,7 +222,49 @@ export const getChatsAPI = async () => {
     }
 }
 
-export const createChatsAPI = async (chat_name, participants) => {
+export const subscribeToChatsAPI = (callback) => {
+    const user = auth.currentUser;
+    if (!user) return () => { };
+
+    const q = query(
+        collection(db, "chats"),
+        where("participants", "array-contains", user.uid)
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        const chats = [];
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            let displayName = data.chat_name;
+            let otherUserId = null;
+
+            if (data.group) {
+                // It's a group, strictly use the group name set by creator
+                displayName = data.chat_name;
+            } else {
+                // Logic to determine other user's ID
+                // If it's a 1-on-1 chat (2 participants), find the ID that isn't the current user
+                if (data.participants && data.participants.length === 2) {
+                    otherUserId = data.participants.find(p => p !== user.uid);
+                }
+
+                if (data.createdBy !== user.uid && data.chat_name2) {
+                    displayName = data.chat_name2;
+                }
+            }
+
+            chats.push({
+                id: doc.id,
+                ...data,
+                chat_name: displayName,
+                other_user_id: otherUserId
+            });
+        });
+        callback(chats);
+    });
+}
+
+export const createChatsAPI = async (chat_name, participants, isGroup = false) => {
     try {
         const user = auth.currentUser;
         if (!user) throw new Error("User not authenticated");
@@ -181,32 +273,35 @@ export const createChatsAPI = async (chat_name, participants) => {
         const uniqueParticipants = [...new Set([...participants, user.uid])];
 
         // Prevent self-chat (if unique participants is only 1 and it is the current user)
-        if (uniqueParticipants.length < 2) {
+        if (uniqueParticipants.length < 2 && !isGroup) {
             throw new Error("Cannot create a chat with yourself");
         }
 
-        // Check if chat already exists
-        const q = query(
-            collection(db, "chats"),
-            where("participants", "array-contains", user.uid)
-        );
-        const querySnapshot = await getDocs(q);
-        let existingChatId = null;
+        // Check if chat already exists (ONLY FOR 1-on-1 DMs)
+        if (!isGroup) {
+            const q = query(
+                collection(db, "chats"),
+                where("participants", "array-contains", user.uid)
+            );
+            const querySnapshot = await getDocs(q);
+            let existingChatId = null;
 
-        // This is a basic client-side check. Ideally valid validation should happen on server or strict query
-        // Checks if an exact match of participants exists
-        querySnapshot.forEach(doc => {
-            const data = doc.data();
-            const dataParts = data.participants.sort();
-            const newParts = uniqueParticipants.sort();
-            if (JSON.stringify(dataParts) === JSON.stringify(newParts)) {
-                existingChatId = doc.id;
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                // Ensure we only match against other non-group chats
+                if (!data.group) {
+                    const dataParts = data.participants.sort();
+                    const newParts = uniqueParticipants.sort();
+                    if (JSON.stringify(dataParts) === JSON.stringify(newParts)) {
+                        existingChatId = doc.id;
+                    }
+                }
+            });
+
+            if (existingChatId) {
+                console.log("Chat already exists:", existingChatId);
+                return { success: true, id: existingChatId };
             }
-        });
-
-        if (existingChatId) {
-            console.log("Chat already exists:", existingChatId);
-            return { success: true, id: existingChatId };
         }
 
         // Fetch current user's profile to get their name for 'chat_name2'
@@ -221,11 +316,12 @@ export const createChatsAPI = async (chat_name, participants) => {
         }
 
         const docRef = await addDoc(collection(db, "chats"), {
-            chat_name: chat_name,        // Name for the Creator to see (Target's Name)
+            chat_name: chat_name,        // Name for the Creator to see (Target's Name) OR Group Name
             chat_name2: currentUserName, // Name for the Target to see (Creator's Name)
             participants: uniqueParticipants,
             createdAt: new Date(),
-            createdBy: user.uid
+            createdBy: user.uid,
+            group: isGroup
         });
 
         console.log("Chat created with ID: ", docRef.id);
@@ -294,4 +390,3 @@ export const subscribeToMessagesAPI = (chatId, callback) => {
 
     return unsubscribe;
 }
-

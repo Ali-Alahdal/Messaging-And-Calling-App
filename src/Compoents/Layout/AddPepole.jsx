@@ -44,12 +44,16 @@ function AddPepole() {
 
             <div>
                 {
-                    users.map((user) => {
-                        // Ensure we don't list the current user if possible, handled by API or UI but API returns all matches
-                        return <AddPerson key={user.id} username={user.username} user_id={user.id} />
-                    })
+                    !searchTerm ? (
+                        <h1 className="text-white text-center mt-4">Search for someone</h1>
+                    ) : users.length === 0 ? (
+                        <h1 className="text-white text-center mt-4">We couldn't find the username</h1>
+                    ) : (
+                        users.map((user) => {
+                            return <AddPerson key={user.id} username={user.username} user_id={user.id} />
+                        })
+                    )
                 }
-
 
             </div>
 
