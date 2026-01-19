@@ -1,93 +1,60 @@
 import { useEffect, useState } from "react";
-
 import AddPerson from "../Parts/AddPerson";
-
-
+import { searchUsersAPI } from "../../Hooks/APIs";
 
 function AddPepole() {
 
-    const [chats , setChats] = useState([]);
-    const [isConnected , setIsConnected] = useState(false)
+    const [users, setUsers] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
 
-    const url = `ws://127.0.0.1:8000/ws/search/`;
-    const ws2 = new WebSocket(url)
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(async () => {
+            if (searchTerm.trim()) {
+                try {
+                    const results = await searchUsersAPI(searchTerm);
+                    setUsers(results);
+                } catch (error) {
+                    console.error("Error searching users:", error);
+                }
+            } else {
+                setUsers([]);
+            }
+        }, 500); // 500ms debounce
 
-    useEffect(() =>{    
-        ws2.onopen = (event) =>{
-            console.log("Connection is Opend Search");
-            // console.log(event);
-            // setIsConnected(true)
-        }
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm]);
 
-        
-        ws2.onmessage = async (event) =>{
-            // const json  = JSON.parse(event.data)
-            console.log(event);
-            setChats(JSON.parse( event.data))
-        
-           
-        }
-        ws2.onclose = () =>{
-            console.log("Connection Closed! Search");
-            console.log(event);
-        //    setIsConnected(false)
-        } 
-    
-        ws2.onerror = (event) =>{
-            console.log(event);
-            // setIsConnected(false)
-           
-            
-        }
-        
-      
+    return (
+        <section className="w-[90%] bg-[var(--bgS)]  h-auto flex-1 overflow-auto  " style={{ scrollbarWidth: "none" }}>
 
-    }, [ws2.onmessage])
+            <div className="flex bg-[var(--bg)]   p-3 text-center items-center   ">
 
+                <svg className="size-9 place-self-center text-white me-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 15.75-2.489-2.489m0 0a3.375 3.375 0 1 0-4.773-4.773 3.375 3.375 0 0 0 4.774 4.774ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
 
-    const sendPromot= (data) =>{
-        if(ws2.readyState === 1){
-            ws2.send(
-                data
-            )
-        }
-            
-        
-       
-        
-    }
-    // useEffect(()=>{
+                <input
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="p-2 outline-none rounded-md"
+                    type="search"
+                    placeholder="Type username..."
+                    value={searchTerm}
+                />
+            </div>
 
-        
-       
-      
-       
-    // },[promot])
-
-    return ( 
-        <section className="w-[90%] bg-[var(--bgS)]  h-auto flex-1 overflow-auto  " style={{scrollbarWidth:"none"}}>
-               
-               <div className="flex bg-[var(--bg)]   p-3 text-center items-center   ">
-
-                    <svg className="size-9 place-self-center text-white me-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 15.75-2.489-2.489m0 0a3.375 3.375 0 1 0-4.773-4.773 3.375 3.375 0 0 0 4.774 4.774ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-
-                <input onChange={(event) => {  sendPromot(event.target.value) } } className="p-2 outline-none rounded-md" type="search" name="" id="" placeholder="type   username..."/>
-               </div>
-
-               <div>
+            <div>
                 {
-                    chats.map((chat, index) =>{
-                        return <AddPerson key={index}  username={chat.username} user_id={chat.id}  />
+                    users.map((user) => {
+                        // Ensure we don't list the current user if possible, handled by API or UI but API returns all matches
+                        return <AddPerson key={user.id} username={user.username} user_id={user.id} />
                     })
                 }
-                
-               
-               </div>
-             
+
+
+            </div>
+
         </section>
-     );
+    );
 }
 
 export default AddPepole;

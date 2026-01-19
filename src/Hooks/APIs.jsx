@@ -1,141 +1,133 @@
-import axios from "axios"
-
-
-
-const url = "http://127.0.0.1:8000/api";
-const url_users = "http://127.0.0.1:8000/api/users";
-const url_messaging = "http://127.0.0.1:8000/api/messaging";
-
-
-
-const user_endpoint = axios.create({
-    baseURL : url_users,
-    withCredentials : true
-});
-
-const messaging_endpoint = axios.create({
-    baseURL : url_messaging,
-    withCredentials : true
-});
-
-const normal_endpoint = axios.create({
-    baseURL : url,
-    withCredentials : true
-});
-
-
-//  *******************
-//  interceptors 
-//  *******************
-
-messaging_endpoint.interceptors.response.use(
-    (response) =>{
-        return response;
-    },
-
-    async (error) =>{
-        const originalRequest = error.config;
-
-      if(error.response && error.response.status === 401  && !originalRequest._retry)  {
-         originalRequest._retry = true;
-         try {
-            const response = await user_endpoint.post(`/refresh/`);
-            if(!response.data.success){
-                throw new Error("You Are Not Logged in")
-            }
-            
-            return messaging_endpoint(originalRequest)
-            
-         } catch (error) {
-            
-            window.location.href = '/login';
-         }
-      }
-
-      return Promise.reject(error);
-
-
-    }
-);
-
-normal_endpoint.interceptors.response.use(
-    (response) =>{
-        return response;
-    },
-
-    async (error) =>{
-        const originalRequest = error.config;
-
-      if(error.response && error.response.status === 401  && !originalRequest._retry)  {
-         originalRequest._retry = true;
-         try {
-            const response = await user_endpoint.post(`/refresh/`);
-            if(!response.data.success){
-                throw new Error("You Are Not Logged in")
-            }
-            
-            return normal_endpoint(originalRequest)
-            
-         } catch (error) {
-            
-            window.location.href = '/login';
-         }
-      }
-
-      return Promise.reject(error);
-
-
-    }
-);
-
-
+import { auth, db } from "../firebase/firebase";
+import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    updateProfile
+} from "firebase/auth";
+import {
+    collection,
+    addDoc,
+    query,
+    where,
+    getDocs,
+    setDoc,
+    doc,
+    getDoc,
+    onSnapshot,
+    orderBy,
+    serverTimestamp
+} from "firebase/firestore";
 
 //  *******************
 //  User Operations 
 //  *******************
 
+export const registerAPI = async (first_name, last_name, email, username, password) => {
+    try {
+        // 1. Create user in Firebase Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-export const registerAPI = async (first_name , last_name , email, username , password) => {
-    
-    const response = await user_endpoint.post(`/register/` , {
-        first_name : first_name,
-        last_name : last_name,
-        email : email,
-        username : username,
-        password : password
-    });
+        // 2. Update Auth Profile
+        await updateProfile(user, {
+            displayName: `${first_name} ${last_name}`
+        });
 
-    return  response.data
+        // 3. Store additional user data in Firestore
+        await setDoc(doc(db, "users", user.uid), {
+            uid: user.uid,
+            first_name,
+            last_name,
+            email,
+            username,
+        });
+
+        return { success: true, user: { uid: user.uid, email: user.email, username } };
+    } catch (error) {
+        console.error("Register Error:", error);
+        throw error;
+    }
 }
 
-export const loginAPI = async (email , password) => {
-    
-    const response = await user_endpoint.post(`/login/` , {
-        email : email,
-        password : password
-    });
-    
-    return  response.data
+export const loginAPI = async (email, password) => {
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        return { success: true, user: userCredential.user };
+    } catch (error) {
+        console.error("Login Error:", error);
+        throw error;
+    }
 }
 
 export const logoutAPI = async () => {
-    
-    const response = await user_endpoint.post(`/logout/`);
-    
-    return  response.data
+    try {
+        await signOut(auth);
+        return { success: true };
+    } catch (error) {
+        console.error("Logout Error:", error);
+        throw error;
+    }
 }
-
-
 
 export const getProfileAPI = async () => {
-    
-    const response = await normal_endpoint.get(`/users/getProfile/`);
-    
-    return  response.data
+    try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("No user logged in");
+
+        // Optionally fetch more data from Firestore if needed
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+
+        if (userDoc.exists()) {
+            return { success: true, data: userDoc.data() };
+        } else {
+            // Fallback to auth profile if doc doesn't exist
+            return {
+                success: true,
+                data: {
+                    email: user.email,
+                    displayName: user.displayName,
+                    uid: user.uid
+                }
+            };
+        }
+    } catch (error) {
+        console.error("Get Profile Error:", error);
+        throw error;
+    }
 }
 
+export const searchUsersAPI = async (searchTerm) => {
+    try {
+        if (!searchTerm) return [];
+        const currentUser = auth.currentUser;
+        if (!currentUser) return [];
 
+        // Firestore prefix search
+        const q = query(
+            collection(db, "users"),
+            where("username", ">=", searchTerm),
+            where("username", "<=", searchTerm + '\uf8ff')
+        );
 
+        const querySnapshot = await getDocs(q);
+        const users = [];
+
+        querySnapshot.forEach((doc) => {
+            // Exclude current user
+            if (doc.id !== currentUser.uid) {
+                users.push({ id: doc.id, ...doc.data() });
+            }
+        });
+
+        return users;
+    } catch (error) {
+        console.error("Search Users Error:", error);
+        throw error;
+    }
+}
+
+// ... existing code ...
 
 //  *******************
 //  Messaging Operations 
@@ -143,30 +135,163 @@ export const getProfileAPI = async () => {
 
 export const getChatsAPI = async () => {
     try {
-        const response = await messaging_endpoint.get(`/getChats/`);
-        return response.data
+        const user = auth.currentUser;
+        if (!user) throw new Error("User not authenticated");
+
+        // Query chats where 'participants' array contains the current user's UID
+        const q = query(
+            collection(db, "chats"),
+            where("participants", "array-contains", user.uid)
+        );
+
+        const querySnapshot = await getDocs(q);
+        const chats = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            // Determine which name to show
+            // If current user is the creator, show 'chat_name' (Target Name)
+            // If current user is NOT the creator, show 'chat_name2' (Creator Name)
+            // Fallback to 'chat_name' if 'chat_name2' is missing
+            let displayName = data.chat_name;
+            if (data.createdBy !== user.uid && data.chat_name2) {
+                displayName = data.chat_name2;
+            }
+
+            chats.push({
+                id: doc.id,
+                ...data,
+                // Override chat_name with the correct display name for the frontend
+                chat_name: displayName
+            });
+        });
+
+        return chats;
     } catch (error) {
-        // callRefresh(error ,getChatsAPI);
-        
+        console.error("Get Chats Error:", error);
+        throw error; // Propagate error or return empty array
     }
-    
 }
 
-export const createChatsAPI = async (chat_name , participnats) => {
+export const createChatsAPI = async (chat_name, participants) => {
     try {
-        const response = await messaging_endpoint.post(`/createChat/`, {
-            "chat_name" : chat_name,
-            "participants" : participnats
-            
+        const user = auth.currentUser;
+        if (!user) throw new Error("User not authenticated");
+
+        // Ensure current user is in participants
+        const uniqueParticipants = [...new Set([...participants, user.uid])];
+
+        // Prevent self-chat (if unique participants is only 1 and it is the current user)
+        if (uniqueParticipants.length < 2) {
+            throw new Error("Cannot create a chat with yourself");
+        }
+
+        // Check if chat already exists
+        const q = query(
+            collection(db, "chats"),
+            where("participants", "array-contains", user.uid)
+        );
+        const querySnapshot = await getDocs(q);
+        let existingChatId = null;
+
+        // This is a basic client-side check. Ideally valid validation should happen on server or strict query
+        // Checks if an exact match of participants exists
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            const dataParts = data.participants.sort();
+            const newParts = uniqueParticipants.sort();
+            if (JSON.stringify(dataParts) === JSON.stringify(newParts)) {
+                existingChatId = doc.id;
+            }
         });
-        console.log(response);
-        return response.data
-        
-        
+
+        if (existingChatId) {
+            console.log("Chat already exists:", existingChatId);
+            return { success: true, id: existingChatId };
+        }
+
+        // Fetch current user's profile to get their name for 'chat_name2'
+        let currentUserName = user.displayName;
+        if (!currentUserName) {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+                currentUserName = userDoc.data().username || userDoc.data().email;
+            } else {
+                currentUserName = user.email;
+            }
+        }
+
+        const docRef = await addDoc(collection(db, "chats"), {
+            chat_name: chat_name,        // Name for the Creator to see (Target's Name)
+            chat_name2: currentUserName, // Name for the Target to see (Creator's Name)
+            participants: uniqueParticipants,
+            createdAt: new Date(),
+            createdBy: user.uid
+        });
+
+        console.log("Chat created with ID: ", docRef.id);
+        return { success: true, id: docRef.id };
     } catch (error) {
-        // callRefresh(error ,createChatsAPI(participnats))
-        console.log(error);
+        console.error("Create Chat Error:", error);
+        throw error;
     }
-    
+}
+
+export const sendMessageAPI = async (chatId, content) => {
+    try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("User not authenticated");
+        if (!chatId) throw new Error("No chat selected");
+
+        const messagesRef = collection(db, "chats", chatId, "messages");
+
+
+
+        // Always fetch the latest username from Firestore to ensure correctness
+        // and consistency (preferring the unique 'username' over 'displayName')
+        let senderName = "Unknown";
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+            senderName = userDoc.data().username || user.displayName || user.email;
+        } else {
+            senderName = user.displayName || user.email;
+        }
+
+        await addDoc(messagesRef, {
+            sender_id: user.uid,
+            sender_name: senderName,
+            content: content,
+            sent_time: serverTimestamp(), // Use server timestamp for ordering
+            type: "text"
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error("Send Message Error:", error);
+        throw error;
+    }
+}
+
+export const subscribeToMessagesAPI = (chatId, callback) => {
+    if (!chatId) return () => { };
+
+    const messagesRef = collection(db, "chats", chatId, "messages");
+    const q = query(messagesRef, orderBy("sent_time", "asc"));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const messages = [];
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            // Convert timestamp to date/string if needed, or handle in UI
+            messages.push({
+                id: doc.id,
+                ...data,
+                // Ensure sent_time is safely convertible if it's null (pending server write)
+                sent_time: data.sent_time?.toDate ? data.sent_time.toDate().toISOString() : new Date().toISOString()
+            });
+        });
+        callback(messages);
+    });
+
+    return unsubscribe;
 }
 
